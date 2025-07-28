@@ -1,0 +1,111 @@
+name: Build CM1 Inside NCAR HPC Development Containers
+
+# This workflow is used to build and run CM1 inside NCAR HPC development containers.
+# It's adapted from Ben Kirk's workflows building & testing dev containers with github actions
+# NCAR/CISL Docker Hub: https://hub.docker.com/u/ncarcisl
+# Ben Kirk's workflows: https://github.com/benkirk/demo_github_actions
+
+
+on:
+  workflow_dispatch:
+    inputs:
+        os:
+          description: 'Base OS'
+          type: choice
+          required: true
+          default: almalinux9
+          options:
+            - almalinux8
+            - almalinux9
+            - almalinux10
+            - leap
+            - tumbleweed
+            - noble
+
+jobs:
+
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        #compiler: [ nvhpc, oneapi, aocc, gcc, gcc12, gcc13, gcc14, clang ]
+        compiler: [ nvhpc, gcc ]
+        mpi:      [ mpich3 ]
+        gpu:      [ nogpu, cuda ]
+        arch:     [ x86_64 ]
+        netcdf:   [ netcdf, nonetcdf]
+
+        include:
+          - netcdf: netcdf
+            extra_output_flags: 'export USE_NETCDF=true'
+          - compiler: nvhpc
+            gpu: cuda
+            extra_accel_args: 'export OPENACC=true'
+
+
+    name: Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -elo pipefail {0}
+
+    container:
+      image: ncarcisl/cisldev-${{ matrix.arch }}-${{ inputs.os }}-${{ matrix.compiler }}-${{ matrix.mpi }}${{ matrix.gpu == 'cuda' && '-cuda' || '' }}:devel
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Interrogate Runtime Environment
+        run: |
+          echo "=== Container Environment ==="
+          cat /container/config_env.sh
+          echo
+          echo "=== System Information ==="
+          pwd
+          echo "Container OS:"
+          cat /etc/os-release 2>/dev/null || echo "OS info not available"
+          uname -a
+          echo
+          echo "=== Hardware Information ==="
+          lscpu | head -10
+          nvidia-smi 2>/dev/null || echo "No NVIDIA GPU detected"
+          df -h | head -5
+          echo
+          echo "=== Compiler Information ==="
+          echo "CC=${CC}"
+          echo "CXX=${CXX}"
+          echo "FC=${FC}"
+          echo "F77=${F77}"
+          echo
+          echo "CFLAGS=${CFLAGS}"
+          echo "CPPFLAGS=${CPPFLAGS}"
+          echo "CXXFLAGS=${CXXFLAGS}"
+          echo "FCFLAGS=${FCFLAGS}"
+          echo "F77FLAGS=${F77FLAGS}"
+          export CC CXX FC F77 CFLAGS CXXFLAGS FCFLAGS F77FLAGS CPPFLAGS
+          echo
+          echo "=== Library Versions ==="
+          which conda 2>/dev/null && conda --version || echo "conda: not available"
+          which mpicc && mpicc --version 2>/dev/null || echo "mpicc: not available"
+          which mpirun && mpirun --version 2>/dev/null || echo "mpirun: not available"
+          which cmake && cmake --version 2>/dev/null || echo "cmake: not available"
+          which make && make --version 2>/dev/null | head -1 || echo "make: not available"
+
+      - name: Build CM1
+        continue-on-error: false
+        run: |
+          chmod +x .github/workflows/build_cm1.sh
+
+          # Use extra_io_args to set whether to use PIO or SMIOL
+          if [ -n "${{ matrix.extra_output_args }}" ]; then
+            eval "${{ matrix.extra_output_args }}"
+          fi
+
+          # Use extra_accel_args to set whether to use OpenACC
+          if [ -n "${{ matrix.extra_accel_args }}" ]; then
+            eval "${{ matrix.extra_accel_args }}"
+          fi
+          timeout 25m .github/workflows/build_cm1.sh
+
+
+
