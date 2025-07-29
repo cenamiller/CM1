@@ -109,11 +109,21 @@ jobs:
           cd src
           timeout 25m ../.github/workflows/build_cm1.sh
 
-      - name: Run CM1
+      - name: Run CM1 on CPU
+        if: matrix.gpu == 'nogpu'
         continue-on-error: false
         run: |
           chmod +x .github/workflows/run_cm1.sh
           timeout 25m .github/workflows/run_cm1.sh 1
 
+      - name: Run CM1 on GPU
+        if: matrix.gpu == 'cuda'
+        continue-on-error: false
+        run: |
+          chmod +x .github/workflows/run_cm1.sh
+          export CUDA_VISIBLE_DEVICES=""
+          export MPIR_CVAR_ENABLE_GPU=0
+
+          timeout 25m .github/workflows/run_cm1.sh 1
 
 
