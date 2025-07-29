@@ -97,7 +97,6 @@ jobs:
         run: |
 
           chmod +x .github/workflows/build_cm1.sh
-          cd src
 
           if [ "${{ matrix.netcdf }}" = "netcdf" ]; then
             export USE_NETCDF=true
@@ -107,8 +106,8 @@ jobs:
             export OPENACC=true
           fi
 
-          
-          timeout 25m .github/workflows/build_cm1.sh
+          cd src
+          timeout 25m ../.github/workflows/build_cm1.sh
 
 
 
