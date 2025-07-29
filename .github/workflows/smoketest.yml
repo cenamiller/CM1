@@ -36,7 +36,7 @@ jobs:
         #netcdf:   [ netcdf]
         netcdf:   [ nonetcdf]
 
-        include:
+        #include:
           #- netcdf: netcdf
           #  extra_output_flags: 'export USE_NETCDF=true'
 
@@ -116,6 +116,8 @@ jobs:
           chmod +x .github/workflows/build_cm1.sh
           export USE_OPENACC=true
           export USE_OPENACC_CPU=true
+
+          timeout 25m .github/workflows/build_cm1.sh
 
       - name: Run CM1 on with OpenACC on multicore CPU
         if: matrix.gpu == 'nogpu' && matrix.compiler == 'nvhpc'
