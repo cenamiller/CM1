@@ -126,6 +126,10 @@ jobs:
           if [ "${{ matrix.netcdf }}" = "netcdf" ]; then
             export USE_NETCDF=true
           fi
+
+          if [ "${{ matrix.gpu }}" = "cuda" ]; then
+            export USE_OPENACC=true
+          fi
           
 
           timeout 25m .github/workflows/build_cm1.sh
