@@ -39,9 +39,6 @@ jobs:
         include:
           #- netcdf: netcdf
           #  extra_output_flags: 'export USE_NETCDF=true'
-          - compiler: nvhpc
-            gpu: cuda
-            extra_accel_args: 'export USE_OPENACC=true'
 
 
     name: Build
@@ -102,12 +99,8 @@ jobs:
             export USE_NETCDF=true
           fi
           
-          if [ "${{ matrix.compiler }}" = "nvhpc" ] && [ "${{ matrix.gpu }}" = "cuda" ]; then
-            export USE_OPENACC=true
-          fi
 
-          cd src
-          timeout 25m ../.github/workflows/build_cm1.sh
+          timeout 25m .github/workflows/build_cm1.sh
 
       - name: Run CM1 on CPU
         if: matrix.gpu == 'nogpu'
@@ -116,14 +109,26 @@ jobs:
           chmod +x .github/workflows/run_cm1.sh
           timeout 25m .github/workflows/run_cm1.sh 1
 
-      - name: Run CM1 on GPU
-        if: matrix.gpu == 'cuda'
+      - name: Build CM1 with OpenACC for multicore CPU
+        if: matrix.gpu == 'nogpu' && matrix.compiler == 'nvhpc'
+        continue-on-error: false
+        run: |
+          chmod +x .github/workflows/build_cm1.sh
+          export USE_OPENACC=true
+          export USE_OPENACC_CPU=true
+
+      - name: Run CM1 on with OpenACC on multicore CPU
+        if: matrix.gpu == 'nogpu' && matrix.compiler == 'nvhpc'
         continue-on-error: false
         run: |
           chmod +x .github/workflows/run_cm1.sh
+          export USE_OPENACC=true
+          export USE_OPENACC_CPU=true
           export CUDA_VISIBLE_DEVICES=""
           export MPIR_CVAR_ENABLE_GPU=0
+          export ACC_DEVICE_TYPE=host
+          export ACC_NUM_CORES=4
 
-          timeout 25m .github/workflows/run_cm1.sh 1
+          timeout 25m .github/workflows/run_cm1.sh 4
 
 

@@ -8,7 +8,7 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source ${SCRIPTDIR}/build_common.cfg || { echo "cannot locate ${SCRIPTDIR}/build_common.cfg!!"; exit 1; }
 #----------------------------------------------------------------------------
 
-
+cd src
 echo "building CM1 in $(pwd)"
 
 case "${COMPILER_FAMILY}" in

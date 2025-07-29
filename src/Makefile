@@ -9,6 +9,7 @@
 #  - USE_MPI: turn on MPI (default=false)
 #  - USE_DOUBLE: turn on double precision calculation (for PGI/NVHPC only, default=false)
 #  - USE_OPENACC: turn on OpenACC (for PGI/NVHPC only, default=false)
+#  - USE_OPENACC_CPU: turn on OpenACC for multicore CPU (for NVHPC only, default=false)
 #  - USE_NETCDF: turn on netCDF output (default=false)
 #  - DEBUG: turn on DEBUG mode (default=false)
 #
@@ -16,6 +17,7 @@
 #    make USE_OPENMP=true                 # shared memory only
 #    make USE_OPENMP=true USE_MPI=true    # shared + distributed memory
 #    make USE_OPENACC=true USE_MPI=true   # distributed memory + GPU offloading
+#    make USE_OPENACC=true USE_OPENACC_CPU=true USE_MPI=true  # distributed memory + CPU multicore
 #
 #  Note that the logical values set to the argument variables are case insensitive.
 #
@@ -33,6 +35,7 @@ USE_OPENMP_L  = $(shell echo $(USE_OPENMP) | tr A-Z a-z)
 USE_MPI_L     = $(shell echo $(USE_MPI) | tr A-Z a-z)
 USE_DOUBLE_L  = $(shell echo $(USE_DOUBLE) | tr A-Z a-z)
 USE_OPENACC_L = $(shell echo $(USE_OPENACC) | tr A-Z a-z)
+USE_OPENACC_CPU_L = $(shell echo $(USE_OPENACC_CPU) | tr A-Z a-z)
 USE_NETCDF_L  = $(shell echo $(USE_NETCDF) | tr A-Z a-z)
 DEBUG_L       = $(shell echo $(DEBUG) | tr A-Z a-z)
 USE_CUDAMEM_L = $(shell echo $(USE_CUDAMEM) | tr A-Z a-z)
@@ -82,7 +85,7 @@ ifeq (${FC},nvfortran)
          OPTS    += -g -O0
          DM      += -D_B4B
     else
-         OPTS    += -g -O2
+         OPTS    += -O2
     endif
     ifeq (${USE_DOUBLE_L},true)
          OPTS    += -r8
@@ -93,23 +96,30 @@ ifeq (${FC},nvfortran)
          OMP     += -DOPENMP
     endif
     ifeq (${USE_OPENACC_L},true)
-        ifeq (${DEBUG_L},true)
-            ifeq (${GPU_TYPE_L},a100)
-                OPTS += -acc -gpu=cc80,lineinfo,nofma,autocompare,math_uniform
-            else
-                OPTS += -acc -gpu=cc70,lineinfo,nofma,autocompare,math_uniform
-            endif
+        ifeq (${USE_OPENACC_CPU_L},true)
+            # Multicore CPU OpenACC
+            OPTS += -acc -ta=multicore
+            DM   += -D_OPENACC -D_OPENACC_CPU
         else
-            # Potentially interesting non-default compiler flags:: 
-            #     -Minfo=accel    Provides verbose output for accelerator compilation phase
-            #     -Mpcast         Enables the use of PCAST functionality
-            ifeq (${GPU_TYPE_L},a100)
-                OPTS += -acc -gpu=cc80,lineinfo,nofma,math_uniform -Minfo=accel -cudalib=cutensor 
+            # GPU OpenACC
+            ifeq (${DEBUG_L},true)
+                ifeq (${GPU_TYPE_L},a100)
+                    OPTS += -acc -gpu=cc80,lineinfo,nofma,autocompare,math_uniform
+                else
+                    OPTS += -acc -gpu=cc70,lineinfo,nofma,autocompare,math_uniform
+                endif
             else
-                OPTS += -acc -gpu=cc70,lineinfo,nofma,math_uniform -Mpcast -Minfo=accel
+                # Potentially interesting non-default compiler flags:: 
+                #     -Minfo=accel    Provides verbose output for accelerator compilation phase
+                #     -Mpcast         Enables the use of PCAST functionality
+                ifeq (${GPU_TYPE_L},a100)
+                    OPTS += -acc -gpu=cc80,lineinfo,nofma,math_uniform -Minfo=accel -cudalib=cutensor 
+                else
+                    OPTS += -acc -gpu=cc70,lineinfo,nofma,math_uniform -Mpcast -Minfo=accel
+                endif
             endif
+            DM       += -D_OPENACC
         endif
-        DM       += -D_OPENACC
     endif
     ifeq (${USE_CUDAMEM_L},true)
         DM       += -D_CUDAMEM
