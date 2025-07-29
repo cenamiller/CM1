@@ -104,6 +104,19 @@ jobs:
           which cmake && cmake --version 2>/dev/null || echo "cmake: not available"
           which make && make --version 2>/dev/null | head -1 || echo "make: not available"
 
+      - name: Remove CUDA Stub Paths
+        if: matrix.gpu == 'cuda' && matrix.compiler == 'nvhpc'
+        run: |
+          # Remove stub paths from library paths
+          export LIBRARY_PATH=$(echo $LIBRARY_PATH | sed 's|/container/cuda/12.9/targets/x86_64-linux/lib/stubs:||g' | sed 's|:/container/cuda/12.9/targets/x86_64-linux/lib/stubs||g')
+          export LD_LIBRARY_PATH=$(echo $LD_LIBRARY_PATH | sed 's|/container/cuda/12.9/targets/x86_64-linux/lib/stubs:||g' | sed 's|:/container/cuda/12.9/targets/x86_64-linux/lib/stubs||g')
+          
+          echo "=== Updated LIBRARY_PATH ==="
+          echo "$LIBRARY_PATH"
+          echo
+          echo "=== Updated LD_LIBRARY_PATH ==="
+          echo "$LD_LIBRARY_PATH"
+
       - name: Build CM1
         continue-on-error: false
         run: |
