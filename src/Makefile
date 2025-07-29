@@ -98,7 +98,7 @@ ifeq (${FC},nvfortran)
     ifeq (${USE_OPENACC_L},true)
         ifeq (${USE_OPENACC_CPU_L},true)
             # Multicore CPU OpenACC
-            OPTS += -acc -ta=multicore
+            OPTS += -acc=multicore
             DM   += -D_OPENACC -D_OPENACC_CPU
         else
             # GPU OpenACC
