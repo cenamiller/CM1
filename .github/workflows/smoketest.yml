@@ -33,8 +33,8 @@ jobs:
         mpi:      [ mpich3 ]
         gpu:      [ cuda ]
         arch:     [ x86_64 ]
-        netcdf:   [ netcdf]
-        #netcdf:   [ nonetcdf]
+        #netcdf:   [ netcdf]
+        netcdf:   [ nonetcdf]
 
         include:
           - netcdf: netcdf
