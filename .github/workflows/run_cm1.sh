@@ -10,11 +10,12 @@ source ${SCRIPTDIR}/build_common.cfg || { echo "cannot locate ${SCRIPTDIR}/build
 
 cd run
 
+
 NUM_PROCS="${1:-${NUM_PROCS:-1}}"
 
 echo "running CM1 in $(pwd)"
 
 
 
-mpirun -n ${NUM_PROCS} cm1.exe namelist.input
+mpirun -n ${NUM_PROCS} ./cm1.exe namelist.input
 
