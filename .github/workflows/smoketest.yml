@@ -96,6 +96,8 @@ jobs:
         continue-on-error: false
         run: |
 
+          cd src
+
           if [ "${{ matrix.netcdf }}" = "netcdf" ]; then
             export USE_NETCDF=true
           fi
