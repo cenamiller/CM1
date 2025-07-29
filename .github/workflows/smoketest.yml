@@ -64,6 +64,12 @@ jobs:
           cat /etc/os-release 2>/dev/null || echo "OS info not available"
           uname -a
           echo
+          echo "=== CUDA Library Contents ==="
+          ls -la /container/cuda/12.9/lib64/ 
+          echo
+          echo "=== CUDA Stub Library Contents ==="
+          ls -la /container/cuda/12.9/targets/x86_64-linux/lib/stubs/ 
+          echo
           echo "=== Hardware Information ==="
           lscpu | head -10
           nvidia-smi 2>/dev/null || echo "No NVIDIA GPU detected"
