@@ -41,7 +41,7 @@ jobs:
             extra_output_flags: 'export USE_NETCDF=true'
           - compiler: nvhpc
             gpu: cuda
-            extra_accel_args: 'export OPENACC=true'
+            extra_accel_args: 'export USE_OPENACC=true'
 
 
     name: Build

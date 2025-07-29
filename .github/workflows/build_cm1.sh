@@ -30,5 +30,5 @@ esac
 
 export USE_MPI=true
 export OPENACC=true
-make FC=${compiler_target} 
+make FC=${compiler_target} OPENACC=true
 #--jobs ${MAKE_J_PROCS:-$(nproc)}
