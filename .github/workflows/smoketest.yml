@@ -65,10 +65,19 @@ jobs:
           uname -a
           echo
           echo "=== CUDA Library Contents ==="
-          ls -la /container/cuda/12.9/lib64/ 
+          if [ -d "/container/cuda/12.9/lib64/" ]; then
+            ls -la /container/cuda/12.9/lib64/ 
+          else
+            echo "Directory /container/cuda/12.9/lib64/ does not exist"
+          fi
+          
           echo
           echo "=== CUDA Stub Library Contents ==="
-          ls -la /container/cuda/12.9/targets/x86_64-linux/lib/stubs/ 
+          if [ -d "/container/cuda/12.9/targets/x86_64-linux/lib/stubs/" ]; then
+            ls -la /container/cuda/12.9/targets/x86_64-linux/lib/stubs/ 
+          else
+            echo "Directory /container/cuda/12.9/targets/x86_64-linux/lib/stubs/ does not exist"
+          fi
           echo
           echo "=== Hardware Information ==="
           lscpu | head -10
