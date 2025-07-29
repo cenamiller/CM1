@@ -103,7 +103,7 @@ jobs:
           fi
           
           if [ "${{ matrix.compiler }}" = "nvhpc" ] && [ "${{ matrix.gpu }}" = "cuda" ]; then
-            export OPENACC=true
+            export USE_OPENACC=true
           fi
 
           cd src
