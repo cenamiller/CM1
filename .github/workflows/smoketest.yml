@@ -29,9 +29,9 @@ jobs:
       fail-fast: false
       matrix:
         #compiler: [ nvhpc, oneapi, aocc, gcc, gcc12, gcc13, gcc14, clang ]
-        compiler: [ nvhpc]
+        compiler: [ nvhpc, gcc]
         mpi:      [ mpich3 ]
-        gpu:      [ cuda ]
+        gpu:      [ nogpu, cuda ]
         arch:     [ x86_64 ]
         #netcdf:   [ netcdf]
         netcdf:   [ nonetcdf]
@@ -108,6 +108,12 @@ jobs:
 
           cd src
           timeout 25m ../.github/workflows/build_cm1.sh
+
+      - name: Run CM1
+        continue-on-error: false
+        run: |
+          chmod +x .github/workflows/run_cm1.sh
+          timeout 25m .github/workflows/run_cm1.sh 1
 
 
 

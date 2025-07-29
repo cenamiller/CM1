@@ -16,7 +16,7 @@ case "${COMPILER_FAMILY}" in
         compiler_target="gfortran"
         ;;
     "oneapi")
-        compiler_target="intel"
+        compiler_target="ifx"
         ;;
     "nvhpc")
         compiler_target="nvfortran"
