@@ -96,6 +96,7 @@ jobs:
         continue-on-error: false
         run: |
 
+          chmod +x .github/workflows/build_cm1.sh
           cd src
 
           if [ "${{ matrix.netcdf }}" = "netcdf" ]; then
@@ -106,7 +107,7 @@ jobs:
             export OPENACC=true
           fi
 
-          chmod +x .github/workflows/build_cm1.sh
+          
           timeout 25m .github/workflows/build_cm1.sh
 
 
