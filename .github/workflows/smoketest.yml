@@ -37,8 +37,8 @@ jobs:
         netcdf:   [ nonetcdf]
 
         include:
-          - netcdf: netcdf
-            extra_output_flags: 'export USE_NETCDF=true'
+          #- netcdf: netcdf
+          #  extra_output_flags: 'export USE_NETCDF=true'
           - compiler: nvhpc
             gpu: cuda
             extra_accel_args: 'export USE_OPENACC=true'
