@@ -29,11 +29,12 @@ jobs:
       fail-fast: false
       matrix:
         #compiler: [ nvhpc, oneapi, aocc, gcc, gcc12, gcc13, gcc14, clang ]
-        compiler: [ nvhpc, gcc ]
+        compiler: [ nvhpc]
         mpi:      [ mpich3 ]
-        gpu:      [ nogpu, cuda ]
+        gpu:      [ cuda ]
         arch:     [ x86_64 ]
-        netcdf:   [ netcdf, nonetcdf]
+        netcdf:   [ netcdf]
+        #netcdf:   [ nonetcdf]
 
         include:
           - netcdf: netcdf
@@ -94,17 +95,16 @@ jobs:
       - name: Build CM1
         continue-on-error: false
         run: |
+
+          if [ "${{ matrix.netcdf }}" = "netcdf" ]; then
+            export USE_NETCDF=true
+          fi
+          
+          if [ "${{ matrix.compiler }}" = "nvhpc" ] && [ "${{ matrix.gpu }}" = "cuda" ]; then
+            export OPENACC=true
+          fi
+
           chmod +x .github/workflows/build_cm1.sh
-
-          # Use extra_io_args to set whether to use PIO or SMIOL
-          if [ -n "${{ matrix.extra_output_args }}" ]; then
-            eval "${{ matrix.extra_output_args }}"
-          fi
-
-          # Use extra_accel_args to set whether to use OpenACC
-          if [ -n "${{ matrix.extra_accel_args }}" ]; then
-            eval "${{ matrix.extra_accel_args }}"
-          fi
           timeout 25m .github/workflows/build_cm1.sh
 
 
